@@ -1,0 +1,63 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Set executable name
+        id: set_name
+        run: |
+          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+            echo "EXE_NAME=puff" >> $GITHUB_ENV
+            echo "OUTPUT_NAME=puff-linux_x86" >> $GITHUB_ENV
+          else
+            echo "EXE_NAME=puff.exe" >> $GITHUB_ENV
+            echo "OUTPUT_NAME=puff-win_x86.exe" >> $GITHUB_ENV
+          fi
+        shell: bash
+
+      - name: Rename executable for Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          mv target/release/${{ env.EXE_NAME }} target/release/${{ env.OUTPUT_NAME }}
+        shell: bash
+
+      - name: Check for executable
+        if: matrix.os == 'windows-latest'
+        run: Get-ChildItem target\release\
+        shell: pwsh
+
+      - name: Rename executable for Windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          Rename-Item -Path "target\release\$($env:EXE_NAME)" -NewName $($env:OUTPUT_NAME)
+        shell: pwsh
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            target/release/${{ env.OUTPUT_NAME }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
