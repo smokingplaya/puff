@@ -1,0 +1,20 @@
+data:
+  projectName: builder
+  authors: ["smokingplaya"]
+  description: helps with project managment
+
+configuration:
+  default: listb
+
+tasks:
+  listb:
+    commands:
+      - clear
+      - cargo run list
+  commit:
+    arguments:
+      - name: msg
+    commands:
+      - git add .
+      - git commit -m ${msg}
+      - git push
