@@ -1,7 +1,7 @@
 use std::{collections::HashMap, env, process::Command};
-use anyhow::{Result, anyhow};
+use anyhow::{anyhow, Result};
 use regex::Regex;
-use crate::puff::Puff;
+use crate::{config::shell::Shell, puff::Puff};
 use super::argument::Argument;
 use serde::Deserialize;
 
@@ -71,15 +71,13 @@ impl Task {
   ) -> Result<()> {
     let shell = puff.configuration
       .clone()
-      .ok_or_else(|| anyhow!("shell not found in configuration"))?
+      .unwrap_or_default()
       .shell
-      .unwrap_or_default();
+      .unwrap_or(Shell::default());
 
     let commands: Vec<String> = self.commands.iter()
       .map(|cmd| self.format(cmd.to_owned(), &args, puff))
       .collect::<Result<_>>()?;
-
-    println!("{commands:?}");
 
     Command::new(&shell.0)
       .arg(shell.get_command_arg())
