@@ -19,7 +19,6 @@ impl Puff {
   fn check_puff_file(
     path: String
   ) -> Result<Puff> {
-    println!("hi");
     let reader = File::open(path)?;
 
     Ok(serde_yml::from_reader::<_, Puff>(reader)?)

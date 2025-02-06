@@ -101,7 +101,7 @@ impl TaskCommand {
         let shell_arg = shell.get_command_arg();
 
         let handle = thread::spawn(move || {
-          println!("thread spawned for task {task_id}");
+          // println!("thread spawned for task {task_id}");
 
           let mut process = Command::new(shell_cmd)
             .arg(shell_arg)
