@@ -13,12 +13,13 @@ pub struct Puff {
   pub tasks: HashMap<String, Task>
 }
 
-const PUFF_FILES: [&str; 3] = ["puff.yaml", "puff.yml", ".puff"];
+const PUFF_FILES: [&str; 3] = ["puff.yml", "puff.yaml", ".puff"];
 
 impl Puff {
   fn check_puff_file(
     path: String
   ) -> Result<Puff> {
+    println!("hi");
     let reader = File::open(path)?;
 
     Ok(serde_yml::from_reader::<_, Puff>(reader)?)
@@ -40,43 +41,43 @@ impl Puff {
   }
 
   /// Displays a list of available commands
-  pub fn list(
-    &self
-  ) -> Result<()> {
-    let data = self.clone()
-      .data
-     .unwrap_or_default();
+  pub fn list(&self) -> Result<()> {
+    let data = self.clone().data.unwrap_or_default();
+    let authors = data.authors.unwrap_or_default();
+    let project_name = if data.project_name.is_empty() {
+      "no project name".to_string()
+    } else {
+      data.project_name.clone()
+    };
 
-    let authors_list = data.authors.unwrap_or_default();
-    let authors = if authors_list.is_empty() { "no authors" } else { &("by ".to_owned() + &(authors_list.join(", ")).blue().to_string()) };
-    let name = if data.project_name.is_empty() { "no project name" } else {&data.project_name};
-
-    println!("🔥 {}", name.cyan().bold());
-    println!("   {authors}");
+    println!("🔥 {}", project_name.cyan().bold());
+    println!("   {}", if authors.is_empty() {
+      "no authors".to_string()
+    } else {
+      format!("by {}", authors.join(", ").blue())
+    });
 
     if let Some(description) = data.description {
-      println!();
-      println!("   {description}");
+      println!("\n   {}", description);
     }
-
     println!();
 
-    self.tasks.iter()
-      .for_each(|(name, data)| {
-        let default = data.is_default(name, self);
-
-        println!(
-          "   {} {}",
-          if default {"•"} else {"○"},
-          if default {name.blue().bold()} else {name.bright_blue()}
-        );
-
-        println!(
-          "     puff {name}{} - {}",
-          data.arguments.clone().unwrap_or_default().to_string(),
-          data.description.clone().unwrap_or(if default {"default task".to_string()} else {"no description".to_string()})
-        );
+    for (name, task) in &self.tasks {
+      let is_default = task.is_default(name, self);
+      let symbol = if is_default { "•" } else { "○" };
+      let formatted_name = if is_default {
+        name.blue().bold()
+      } else {
+        name.bright_blue()
+      };
+      let args = task.arguments.clone().unwrap_or_default().to_string();
+      let desc = task.description.clone().unwrap_or_else(|| {
+        if is_default { "default task".to_string() } else { "no description".to_string() }
       });
+
+      println!("   {} {}", symbol, formatted_name);
+      println!("     puff {}{} - {}", name, args, desc);
+    }
 
     Ok(())
   }

@@ -33,6 +33,7 @@ Puff is similar to [GNU/Make](https://www.gnu.org/software/make/).
   * [Arguments](#arguments)
   * [Variables](#variables)
   * [Configuration](#configuration)
+  * [Multi Thread commands](#multi-thread-commands)
   * [Built-in commands](#built-in-commands)
 * [Building](#building)
 * [Contribution](#contribution)
@@ -197,6 +198,29 @@ For example, you can specify ``powershell``, ``cmd`` (windows), ``bash``, ``zsh`
 ## Task
 ``shell`` is the parameter responsible for which task will be started when there is no task (i.e. by default).
 Value by default: ``default``
+
+## Multi Thread commands
+Puff supports executing commands in a multithreaded fashion.\
+This allows you to execute commands independently of each other, thus reducing the time required to complete a task.
+
+### Usage
+```yml
+- thread: Command
+```
+
+Example:
+```yml
+tasks:
+  default:
+    commands:
+      # regular command
+      - echo
+      # multi threaded commands
+      - thread: gcc projects/soundsystem/main.cpp -o build/soundsystem.o
+      - thread: gcc projects/ui/main.cpp -o build/ui.o
+      - thread: gcc projects/windowhandler/main.cpp -o build/windowhandler.o
+```
+
 
 ## Built-in commands
 ### List

@@ -1,15 +1,14 @@
-use std::{collections::HashMap, env, process::Command};
-use anyhow::{anyhow, Result};
-use regex::Regex;
-use crate::{config::shell::Shell, puff::Puff};
-use super::argument::Argument;
+use std::{process, sync::{atomic::{AtomicUsize, Ordering}, Arc}, thread, time::Duration};
+use anyhow::Result;
+use crate::puff::Puff;
+use super::{argument::Argument, command::TaskCommand};
 use serde::Deserialize;
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct Task {
   pub description: Option<String>,
   pub arguments: Option<Vec<Argument>>,
-  pub commands: Vec<String>
+  pub commands: Vec<TaskCommand>
 }
 
 impl Task {
@@ -21,76 +20,43 @@ impl Task {
     *name == puff.get_default_task()
   }
 
-  /// Finds variable value
-  pub fn find_var(
-    &self,
-    name: &str,
-    args: &Option<Vec<String>>,
-    puff: &Puff
-  ) -> Result<String> {
-    if let Some(arguments) = &self.arguments {
-      if let Some(args) = args {
-        if let Some((ind, arg_data)) = arguments.iter().enumerate().find(|(_, arg)| arg.name == name) {
-          return args.get(ind)
-            .cloned()
-            .or_else(|| arg_data.default.clone())
-            .ok_or_else(|| anyhow!("argument #{ind} ({name}) must be provided!"));
-        }
-      }
-    }
-
-    puff.variables
-      .as_ref()
-      .and_then(|vars| vars.get(name).cloned())
-      .or_else(|| env::var(name).ok())
-      .ok_or_else(|| anyhow!("argument {name} not found!"))
-  }
-
-  /// Formats given command
-  pub fn format(
-    &self,
-    cmd: String,
-    args: &Option<Vec<String>>,
-    puff: &Puff,
-  ) -> Result<String> {
-    let reg = Regex::new(r"\$\{([^}]+)\}")?;
-    let mut values = HashMap::new();
-
-    for cap in reg.captures_iter(&cmd) {
-      if let Some(var) = cap.get(1) {
-        let key = var.as_str().to_string();
-        if !values.contains_key(&key) {
-          values.insert(key.clone(), self.find_var(&key, args, puff)?);
-        }
-      }
-    }
-
-    let result = values.iter().fold(cmd, |acc, (var, value)| {
-      acc.replace(&format!("${{{var}}}"), value)
-    });
-
-    Ok(result)
-  }
-
   pub fn run(
     &self,
     puff: &Puff,
     args: Option<Vec<String>>
   ) -> Result<()> {
+    let thread_counter = Arc::new(AtomicUsize::new(0));
+
     let shell = puff.configuration
       .clone()
       .unwrap_or_default()
       .shell
-      .unwrap_or(Shell::default());
+      .unwrap_or_default();
 
-    let commands: Vec<String> = self.commands.iter()
-      .map(|cmd| self.format(cmd.to_owned(), &args, puff))
-      .collect::<Result<_>>()?;
+    for (ind, command) in self.commands.iter().enumerate() {
+      let (exit_code, handle) = command.execute(
+        &shell,
+        args.clone(),
+        (self, ind),
+        puff,
+        Arc::clone(&thread_counter)
+      )?;
 
-    Command::new(&shell.0)
-      .arg(shell.get_command_arg())
-      .arg(commands.join(";"))
-      .status()?;
+      if exit_code != 0 {
+        println!("task {ind} exited with status {exit_code}");
+        process::exit(exit_code);
+      }
+
+      if handle.is_some() {
+        let counter = Arc::clone(&thread_counter);
+        counter.fetch_add(1, Ordering::SeqCst);
+      }
+    }
+
+    // yep
+    while thread_counter.load(Ordering::SeqCst) > 0 {
+      thread::sleep(Duration::from_millis(100));
+    }
 
     Ok(())
   }

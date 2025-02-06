@@ -10,7 +10,7 @@ tasks:
   listb:
     commands:
       - clear
-      - cargo run list
+      - thread: cargo run list
   commit:
     arguments:
       - name: msg

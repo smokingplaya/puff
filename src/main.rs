@@ -18,7 +18,10 @@ fn run() -> Result<()> {
 
   if let Some(cmd) = command {
     if cmd == "help" {
-      return Ok(help::help());
+      return {
+        help::help();
+        Ok(())
+      };
     }
   }
 
