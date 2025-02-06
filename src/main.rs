@@ -14,15 +14,18 @@ fn run() -> Result<()> {
   // path to the current executable
   args.remove(0);
 
-  let (puff, file_name) = Puff::find()?;
   let command = args.first();
+
+  if let Some(cmd) = command {
+    if cmd == "help" {
+      return Ok(help::help());
+    }
+  }
+
+  let puff = Puff::find()?;
 
   match command {
     Some(task) => match task.as_str() {
-      "help" => {
-        help::help(puff, file_name);
-        Ok(())
-      },
       "list" => puff.list(),
       _ => puff.run(Some(task.to_owned()), {
         args.remove(0);

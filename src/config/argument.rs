@@ -1,5 +1,4 @@
 use std::fmt::Write;
-
 use serde::Deserialize;
 
 #[derive(Deserialize, Clone, Debug)]

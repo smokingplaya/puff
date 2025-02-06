@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fs::File, path::Path};
+use std::{collections::HashMap, fs::File};
 use crate::config::{argument::CustomToString as _, configuration::Configuration, data::Data, task::Task};
 use anyhow::{anyhow, Context, Result};
 use colored::Colorize;
@@ -16,22 +16,19 @@ pub struct Puff {
 const PUFF_FILES: [&str; 3] = ["puff.yaml", "puff.yml", ".puff"];
 
 impl Puff {
+  fn check_puff_file(
+    path: String
+  ) -> Result<Puff> {
+    let reader = File::open(path)?;
+
+    Ok(serde_yml::from_reader::<_, Puff>(reader)?)
+  }
+
   /// Finds PuffFile in Current Working Directory
-  pub fn find() -> Result<(Puff, String), anyhow::Error> {
-    PUFF_FILES
-       .into_iter()
-      .find_map(|file| {
-        if Path::new(file).exists() {
-          let reader = File::open(file).ok()?;
-          match serde_yml::from_reader::<_, Puff>(reader) {
-            Ok(puff) => Some(Ok((puff, file.to_string()))),
-            Err(err) => Some(Err(err.into())),
-          }
-        } else {
-          None
-        }
-      })
-      .unwrap_or_else(|| Err(anyhow!("puff file not found in current directory")))
+  pub fn find() -> Result<Puff> {
+    PUFF_FILES.iter()
+      .find_map(|file| Self::check_puff_file(file.to_string()).ok())
+      .ok_or_else(|| anyhow!("puff file not found in current directory"))
   }
 
   pub fn get_default_task(&self) -> String {

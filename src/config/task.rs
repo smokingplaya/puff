@@ -56,13 +56,21 @@ impl Task {
     let reg = Regex::new(r"\$\{([^}]+)\}")?;
     let mut values = HashMap::new();
 
-    for var in reg.captures_iter(&cmd).map(|c| c[1].to_string()) {
-      values.entry(var.clone()).or_insert_with(|| self.find_var(&var, args, puff).unwrap_or_default());
+    for cap in reg.captures_iter(&cmd) {
+      if let Some(var) = cap.get(1) {
+        let key = var.as_str().to_string();
+        if !values.contains_key(&key) {
+          values.insert(key.clone(), self.find_var(&key, args, puff)?);
+        }
+      }
     }
 
-    Ok(values.iter().fold(cmd, |acc, (var, value)| acc.replace(&format!("${{{var}}}"), value)))
-  }
+    let result = values.iter().fold(cmd, |acc, (var, value)| {
+      acc.replace(&format!("${{{var}}}"), value)
+    });
 
+    Ok(result)
+  }
 
   pub fn run(
     &self,
