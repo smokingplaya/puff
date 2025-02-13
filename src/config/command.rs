@@ -87,9 +87,10 @@ impl TaskCommand {
   ) -> Result<(i32, Option<JoinHandle<()>>)> {
     match self {
       Self::Classic(cmd) => {
+          let (task, _) = task;
         let cmd = Command::new(&shell.0)
           .arg(shell.get_command_arg())
-          .arg(cmd)
+          .arg(self.format(cmd.to_owned(), &args, task, puff)?)
           .status()?;
 
         Ok((cmd.code().unwrap_or_default(), None))
