@@ -134,6 +134,9 @@ data:
 ## Arguments
 Sometimes we need to add some arguments to commands that are not constant and need user input. For this purpose, Puff has a built-in command formatter that substitutes arguments for commands.
 
+> [!NOTE]
+> Puff supports ``.env`` files since version ``0.1.4``.
+
 There are three types of arguments:
 1. Those entered from the command line
     * In this case, you must describe these arguments for each Task.
@@ -220,7 +223,6 @@ tasks:
       - thread: gcc projects/ui/main.cpp -o build/ui.o
       - thread: gcc projects/windowhandler/main.cpp -o build/windowhandler.o
 ```
-
 
 ## Built-in commands
 ### List

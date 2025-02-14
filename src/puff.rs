@@ -90,6 +90,8 @@ impl Puff {
     let task = self.tasks.get(&name)
       .context(anyhow!("task not found"))?;
 
+    dotenv::dotenv().ok();
+
     task.run(self, args)
   }
 }
