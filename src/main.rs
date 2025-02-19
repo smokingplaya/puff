@@ -1,8 +1,8 @@
 use std::env;
 use anyhow::Result;
-use colored::Colorize;
 use puff::Puff;
 
+mod log;
 mod config;
 mod help;
 mod puff;
@@ -41,6 +41,6 @@ fn run() -> Result<()> {
 
 fn main() {
   if let Err(err) = run() {
-    println!("😡 error: {}", err.to_string().red().bold())
+    log::error(err)
   }
 }

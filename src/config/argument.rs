@@ -3,8 +3,12 @@ use serde::Deserialize;
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct Argument {
+  /// Name of a argument
   pub name: String,
-  pub default: Option<String>
+  /// Default value (if not provided)
+  pub default: Option<String>,
+  /// Possible values of argument
+  pub options: Option<Vec<String>>
 }
 
 pub trait CustomToString {

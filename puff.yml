@@ -5,6 +5,11 @@ data:
 
 configuration:
   default: listb
+  show_thread_logs: false
+
+variables:
+  floppa: cooked
+  pox: eated, maybe ${floppa}
 
 tasks:
   listb:
@@ -18,3 +23,16 @@ tasks:
       - git add .
       - git commit -m ${msg}
       - git push
+
+  thread_example:
+    arguments:
+      - name: msg
+        options: ["hello", "zero"]
+    description: Shows how to use threads in puff
+    commands:
+      - thread: curl https://vk.com
+      - thread: curl https://youtube.com
+      - thread: curl https://wikipedia.org
+      - echo "pre-thread ${msg}" # first
+      - await: echo "curl completed" # last
+      - echo "${pox}"

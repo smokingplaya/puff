@@ -1,6 +1,6 @@
 use std::{process, sync::{atomic::{AtomicUsize, Ordering}, Arc}, thread, time::Duration};
 use anyhow::Result;
-use crate::puff::Puff;
+use crate::{log, puff::Puff};
 use super::{argument::Argument, command::TaskCommand};
 use serde::Deserialize;
 
@@ -33,6 +33,8 @@ impl Task {
       .shell
       .unwrap_or_default();
 
+    // todo validate arguments before running commands
+
     for (ind, command) in self.commands.iter().enumerate() {
       let (exit_code, handle) = command.execute(
         &shell,
@@ -43,7 +45,7 @@ impl Task {
       )?;
 
       if exit_code != 0 {
-        println!("task {ind} exited with status {exit_code}");
+        log::error(format!("task {ind} exited with status {exit_code}"));
         process::exit(exit_code);
       }
 

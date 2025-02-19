@@ -21,6 +21,8 @@ Puff is similar to [GNU/Make](https://www.gnu.org/software/make/).
 > [!NOTE]
 > You can just look at [Example](#example), and you'll probably understand the idea, and how to use Puff.
 
+![runtime](assets/runtime.png)
+
 # Table of contents
 * [Installation](#installation)
   * [Linux](#linux)
@@ -56,8 +58,6 @@ Puff is similar to [GNU/Make](https://www.gnu.org/software/make/).
 # Usage
 > [!NOTE]
 > Workspace = Current Working Directory
-
-![runtime](assets/runtime.png)
 
 ## Example
 ```yml
@@ -145,6 +145,8 @@ There are three types of arguments:
       default:
         arguments:
           - name: home
+          - name: name_of_bob
+            options: ["Bob", "Maybe Bob", "Andrew"]
           - name: save_path
             default: /home/drippy/cheese
         commands:
@@ -222,6 +224,26 @@ tasks:
       - thread: gcc projects/soundsystem/main.cpp -o build/soundsystem.o
       - thread: gcc projects/ui/main.cpp -o build/ui.o
       - thread: gcc projects/windowhandler/main.cpp -o build/windowhandler.o
+```
+
+### Await
+Sometimes we can do several commands in threads, but it may happen that we need to wait for the threads to finish their work before executing a command.
+
+For this case we have the ``await:`` keyword.
+
+Example:
+```yml
+tasks:
+  default:
+    commands:
+      # regular command
+      - echo
+      # multi threaded commands
+      - thread: gcc projects/soundsystem/main.cpp -o build/soundsystem.o
+      - thread: gcc projects/ui/main.cpp -o build/ui.o
+      - thread: gcc projects/windowhandler/main.cpp -o build/windowhandler.o
+      - echo "pre-thread echo"
+      - await: echo "threads have been completed"
 ```
 
 ## Built-in commands

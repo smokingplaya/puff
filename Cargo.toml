@@ -3,7 +3,7 @@ name = "puff"
 authors = ["smokingplaya"]
 repository = "https://github.com/smokingplaya/puff"
 keywords = ["scripts", "yaml"]
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 
 [dependencies]

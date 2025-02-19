@@ -15,5 +15,12 @@ pub struct Configuration {
   /// Override runtime shell
   pub shell: Option<Shell>,
   /// Default task
-  pub default: Option<DefaultTask>
+  pub default: Option<DefaultTask>,
+  /// Should we shou you logs from multithread command?
+  #[serde(default = "logs")]
+  pub show_thread_logs: Option<bool>
+}
+
+fn logs() -> Option<bool> {
+  Some(true)
 }
