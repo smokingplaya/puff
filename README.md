@@ -52,7 +52,7 @@ Puff is similar to [GNU/Make](https://www.gnu.org/software/make/).
 1. Open powershell **with admin rights**
 2. Paste command
 ```bash
-& {Invoke-WebRequest -Uri "https://raw.githubusercontent.com/smokingplaya/puff/install/windows.ps1" -OutFile "$env:USERPROFILE\Downloads\puffinstaller.ps1"; & "$env:USERPROFILE\Downloads\puffinstaller.ps1"}
+& {Invoke-WebRequest -Uri "https://raw.githubusercontent.com/smokingplaya/puff/refs/heads/master/install/windows.ps1" -OutFile "$env:USERPROFILE\Downloads\install_puff.ps1"; & "$env:USERPROFILE\Downloads\install_puff.ps1"}
 ```
 
 # Usage
