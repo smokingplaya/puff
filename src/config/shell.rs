@@ -7,6 +7,7 @@ pub struct Shell(pub String);
 impl Shell {
   fn get_current_shell() -> String {
     if cfg!(target_os = "windows") {
+      // cmd by default
       env::var("COMSPEC")
         .unwrap_or("cmd".to_string())
     } else {
@@ -20,6 +21,8 @@ impl Shell {
   ) -> String {
     // split this shit 'cuz we can got /usr/bin/zsh for example, not only zsh/bash/etc
     let cmd = self.0
+      .replace("\\", "/") // for windows
+      .replace(".exe", "") // for windows
       .split("/")
       .last()
       .unwrap()

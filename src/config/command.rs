@@ -10,18 +10,18 @@ use super::{shell::Shell, task::Task};
 /// # Example
 /// ```yaml
 /// commands:
-///   - thread: gcc main.cpp
+///   - async: gcc main.cpp
 /// ```
 #[derive(Deserialize, Clone, Debug)]
 pub struct Threaded {
-  thread: String
+  r#async: String
 }
 
 /// # Example
 /// ```yaml
 /// commands:
-///   - thread: gcc general.cpp
-///   - thread: gcc main.cpp
+///   - async: gcc general.cpp
+///   - async: gcc main.cpp
 ///   - await: echo "builded"
 /// ```
 #[derive(Deserialize, Clone, Debug)]
@@ -33,7 +33,7 @@ pub struct Waiter {
 #[serde(untagged)]
 pub enum TaskCommand {
   Classic(String),          // cmd
-  Multithreaded(Threaded),  // thread: cmd
+  Multithreaded(Threaded),  // async: cmd
   Threadwaiter(Waiter)      // await: cmd
 }
 
@@ -116,7 +116,7 @@ impl TaskCommand {
     match self {
       Self::Classic(command) => self.execute_classic(shell, args, task, puff, command),
       Self::Threadwaiter(waiter) => self.execute_threadwaiter(shell, args, task, puff, waiter.r#await.clone(), thread_count),
-      Self::Multithreaded(threaded) => self.execute_multithreaded(shell, args, task, puff, thread_count, threaded.thread.clone()),
+      Self::Multithreaded(threaded) => self.execute_multithreaded(shell, args, task, puff, thread_count, threaded.r#async.clone()),
     }
   }
 
@@ -134,6 +134,7 @@ impl TaskCommand {
       .arg(shell.get_command_arg())
       .arg(formatted_cmd)
       .status()?;
+
     Ok((status.code().unwrap_or_default(), None))
   }
 
@@ -148,9 +149,11 @@ impl TaskCommand {
   ) -> Result<(i32, Option<JoinHandle<()>>)> {
     let (task, _) = task;
     let formatted_cmd = self.format(command, &args, task, puff)?;
+
     while thread_count.load(Ordering::SeqCst) > 0 {
       thread::sleep(Duration::from_millis(100));
     }
+
     let status = Command::new(&shell.0)
       .arg(shell.get_command_arg())
       .arg(formatted_cmd)

@@ -15,7 +15,7 @@ tasks:
   listb:
     commands:
       - clear
-      - thread: cargo run list
+      - async: cargo run list
   commit:
     arguments:
       - name: msg
@@ -30,9 +30,9 @@ tasks:
         options: ["hello", "zero"]
     description: Shows how to use threads in puff
     commands:
-      - thread: curl https://vk.com
-      - thread: curl https://youtube.com
-      - thread: curl https://wikipedia.org
+      - async: curl https://vk.com
+      - async: curl https://youtube.com
+      - async: curl https://wikipedia.org
       - echo "pre-thread ${msg}" # first
       - await: echo "curl completed" # last
       - echo "${pox}"

@@ -210,7 +210,7 @@ This allows you to execute commands independently of each other, thus reducing t
 
 ### Usage
 ```yml
-- thread: Command
+- async: Command
 ```
 
 Example:
@@ -221,9 +221,9 @@ tasks:
       # regular command
       - echo
       # multi threaded commands
-      - thread: gcc projects/soundsystem/main.cpp -o build/soundsystem.o
-      - thread: gcc projects/ui/main.cpp -o build/ui.o
-      - thread: gcc projects/windowhandler/main.cpp -o build/windowhandler.o
+      - async: gcc projects/soundsystem/main.cpp -o build/soundsystem.o
+      - async: gcc projects/ui/main.cpp -o build/ui.o
+      - async: gcc projects/windowhandler/main.cpp -o build/windowhandler.o
 ```
 
 ### Await
@@ -239,9 +239,9 @@ tasks:
       # regular command
       - echo
       # multi threaded commands
-      - thread: gcc projects/soundsystem/main.cpp -o build/soundsystem.o
-      - thread: gcc projects/ui/main.cpp -o build/ui.o
-      - thread: gcc projects/windowhandler/main.cpp -o build/windowhandler.o
+      - async: gcc projects/soundsystem/main.cpp -o build/soundsystem.o
+      - async: gcc projects/ui/main.cpp -o build/ui.o
+      - async: gcc projects/windowhandler/main.cpp -o build/windowhandler.o
       - echo "pre-thread echo"
       - await: echo "threads have been completed"
 ```
